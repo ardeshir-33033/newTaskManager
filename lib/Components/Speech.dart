@@ -5,6 +5,8 @@ import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
+import '../Screens/2ndPage.dart';
+
 class Speech extends StatefulWidget {
   Speech({this.SpeechTextCallBack, this.SpeechButtonCallBack});
 
@@ -28,6 +30,10 @@ class _SpeechState extends State<Speech> {
 //  List<LocaleName> _localeNames = [];
   final SpeechToText speech = SpeechToText();
 
+  Future Waiting(int val) async {
+    await Future.delayed(Duration(seconds: val));
+  }
+
   ////choosing default language
   Future language() async {
     speech.listen(
@@ -42,6 +48,9 @@ class _SpeechState extends State<Speech> {
   @override
   void initState() {
     initSpeechState();
+    Waiting(3).then((value) {
+      !_hasSpeech || speech.isListening ? null : startListeningTap(10);
+    });
     super.initState();
   }
 
@@ -210,47 +219,45 @@ class _SpeechState extends State<Speech> {
             //     ////start button
             //     :
             GestureDetector(
-                    onTap: () {
-                      widget.SpeechButtonCallBack();
+              onTap: () {
+                widget.SpeechButtonCallBack();
 
-                      print('tap');
-                      !_hasSpeech || speech.isListening
-                          ? null
-                          : startListeningTap(10);
-                    },
-                    onLongPress: () {
-                      print('long');
-                      !_hasSpeech || speech.isListening
-                          ? null
-                          : startListeningTap(30);
-                    },
-                    child: Container(
-                      height: 70,
-                      width: 70,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.rectangle,
-                        borderRadius: BorderRadius.circular(15.0),
-                        border:
-                            Border.all(color: Colors.orangeAccent, width: 3),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.mic_none_outlined,
-                            size: 40,
-                            color: speech.isListening
-                                ? Colors.red
-                                : Colors.orangeAccent,
-                          ),
-                          Text(
-                            'Voice',
-                            style: TextStyle(fontSize: 10),
-                          ),
-                        ],
-                      ),
+                print('tap');
+                !_hasSpeech || speech.isListening
+                    ? null
+                    : startListeningTap(10);
+              },
+              onLongPress: () {
+                print('long');
+                !_hasSpeech || speech.isListening
+                    ? null
+                    : startListeningTap(30);
+              },
+              child: Container(
+                height: 70,
+                width: 70,
+                decoration: BoxDecoration(
+                  shape: BoxShape.rectangle,
+                  borderRadius: BorderRadius.circular(15.0),
+                  border: Border.all(color: Colors.orangeAccent, width: 3),
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.mic_none_outlined,
+                      size: 40,
+                      color:
+                          speech.isListening ? Colors.orangeAccent : Colors.red,
                     ),
-                  ),
+                    Text(
+                      'Voice',
+                      style: TextStyle(fontSize: 10),
+                    ),
+                  ],
+                ),
+              ),
+            ),
             //////
 
             SizedBox(

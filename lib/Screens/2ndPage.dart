@@ -1,11 +1,18 @@
 import 'package:easy_localization/easy_localization.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter_datetime_picker/flutter_datetime_picker.dart';
 import 'package:persian_datepicker/jalaali_js.dart';
 import 'package:persian_datepicker/persian_datepicker.dart';
 import 'package:task_manager_new/Components/SpeechAlone.dart';
+import 'package:task_manager_new/provider/StateProvider.dart';
 
 class MainPage2nd extends StatefulWidget {
+  MainPage2nd({this.taskText});
+
   TimeOfDay picker;
+  String taskText = "";
 
   @override
   _MainPage2ndState createState() => _MainPage2ndState();
@@ -14,9 +21,9 @@ class MainPage2nd extends StatefulWidget {
 class _MainPage2ndState extends State<MainPage2nd> {
   TextEditingController SearchBarController = TextEditingController();
   List<String> Users = ["سیف الهی", "اونق", "روحی", "اوژن"];
-  List<String> selectedUsers= List<String>();
+  List<String> selectedUsers = List<String>();
   List<String> Controllers = ["مجرب", "اونق", "هاتف", "اسحاق زاده", "مقدم"];
-  List<String> selectedController = List<String>();
+  String selectedController;
   List<String> projects = [
     "تسک منجیر",
     "کپ اپ",
@@ -24,21 +31,27 @@ class _MainPage2ndState extends State<MainPage2nd> {
     "اینستاگرام",
     "رجیسترینگ"
   ];
+  String selectedprojects;
 
   TextEditingController CalendarEditingController = TextEditingController();
 
   PersianDatePickerWidget persianDatePicker;
   String selectedUser;
+  TextEditingController VoiceController = TextEditingController();
 
   @override
   void initState() {
+    VoiceController.text = widget.taskText;
     persianDatePicker = PersianDatePicker(
-      showGregorianDays: false,
-      controller: CalendarEditingController,
-      farsiDigits: true,
-      weekCaptionsBackgroundColor: Colors.orangeAccent,
-    ).init();
+            showGregorianDays: false,
+            controller: CalendarEditingController,
+            farsiDigits: true,
+            weekCaptionsBackgroundColor: Colors.grey,
+            headerTodayBackgroundColor: Colors.transparent)
+        .init();
     selectedUser = Users[0];
+
+    DateTime now = DateTime.now();
 
     super.initState();
   }
@@ -62,28 +75,51 @@ class _MainPage2ndState extends State<MainPage2nd> {
                   ? Container(
                       margin:
                           EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-                      child: Row(
+                      child: Column(
                         children: [
-                          CircleAvatar(
-                            radius: 30,
-                            backgroundColor: Color(0xffFDCF09),
-                            child: CircleAvatar(
-                              radius: 25,
-                              backgroundImage:
-                                  AssetImage('assets/images/avatarTest.png'),
+                          Row(
+                            children: [
+                              CircleAvatar(
+                                radius: 30,
+                                backgroundColor: Color(0xffFDCF09),
+                                child: CircleAvatar(
+                                  radius: 25,
+                                  backgroundImage: AssetImage(
+                                      'assets/images/avatarTest.png'),
+                                ),
+                              ),
+                              Padding(
+                                padding: EdgeInsets.only(right: 10.0),
+                                child: Text(selectedUser),
+                              ),
+                              Spacer(),
+                              IconButton(
+                                  icon: Icon(Icons.edit),
+                                  color: Colors.grey[500],
+                                  iconSize: 20,
+                                  onPressed: () {
+                                    changeUserVisibility = false;
+                                    setState(() {});
+                                  }),
+                            ],
+                          ),
+                          SizedBox(
+                            height: 10,
+                          ),
+                          Card(
+                            child: Container(
+                              margin: EdgeInsets.all(20),
+                              height: phoneHeight / 5,
+                              width: phoneWidth - 30,
+                              child: TextField(
+                                controller: VoiceController,
+                                maxLines: null,
+                                decoration: InputDecoration(
+                                    border: InputBorder.none,
+                                    hintText: "متن..."),
+                              ),
                             ),
-                          ),
-                          Padding(
-                            padding: EdgeInsets.only(right: 10.0),
-                            child: Text(selectedUser),
-                          ),
-                          Spacer(),
-                          IconButton(
-                              icon: Icon(Icons.edit),
-                              onPressed: () {
-                                changeUserVisibility = false;
-                                setState(() {});
-                              }),
+                          )
                         ],
                       ),
                     )
@@ -95,7 +131,7 @@ class _MainPage2ndState extends State<MainPage2nd> {
                           decoration: BoxDecoration(
                             border:
                                 Border.all(color: Colors.redAccent, width: 1),
-                            borderRadius: BorderRadius.circular(15.0),
+                            borderRadius: BorderRadius.circular(30.0),
                           ),
                           child: Row(
                             children: [
@@ -122,52 +158,78 @@ class _MainPage2ndState extends State<MainPage2nd> {
                           ),
                         ),
                         Container(
-                          height: 150,
-                          padding: EdgeInsets.symmetric(horizontal: 20),
-                          child: GridView.builder(
+                          margin: EdgeInsets.only(right: 30),
+                          height: phoneHeight / 4.5,
+                          child: ListView.builder(
                               itemCount: Users.length,
-                              gridDelegate:
-                                  SliverGridDelegateWithMaxCrossAxisExtent(
-                                      maxCrossAxisExtent: 100,
-                                      childAspectRatio: 5 / 3,
-                                      crossAxisSpacing: 20,
-                                      mainAxisSpacing: 10),
                               itemBuilder: (BuildContext context, int index) {
                                 return GestureDetector(
                                   onTap: () {
-                                    changeUserVisibility = true;
-                                    selectedUser = Users[index];
+                                    selectedUsers.contains(Users[index])
+                                        ? selectedUsers.remove(Users[index])
+                                        : selectedUsers.clear();
+                                    selectedUsers.add(Users[index]);
+                                    selectedUser = selectedUsers.first;
                                     setState(() {});
                                   },
-                                  child: Card(
-                                    child: Center(
-                                      child: Text(Users[index]),
-                                    ),
+                                  child: Row(
+                                    children: [
+                                      Padding(
+                                        padding: EdgeInsets.all(8.0),
+                                        child: Image.asset(
+                                          selectedUsers.contains(Users[index])
+                                              ? 'assets/images/check1.png'
+                                              : 'assets/images/check2.png',
+                                          width: 30,
+                                          height: 30,
+                                        ),
+                                      ),
+                                      Text(Users[index]),
+                                    ],
                                   ),
                                 );
                               }),
                         ),
+                        Center(
+                            child: GestureDetector(
+                          onTap: () {
+                            changeUserVisibility = true;
+                            setState(() {});
+                          },
+                          child: Container(
+                              padding: EdgeInsets.symmetric(horizontal: 20),
+                              margin: EdgeInsets.only(bottom: 10),
+                              decoration: BoxDecoration(
+                                  border: Border(
+                                      bottom: BorderSide(
+                                          width: 2, color: Colors.red))),
+                              child: Text(
+                                "تایید",
+                                style: TextStyle(fontWeight: FontWeight.w600),
+                              )),
+                        )),
                       ],
                     ),
               Container(
-                height: 100,
+                height: phoneHeight / 9,
                 padding: EdgeInsets.only(top: 20),
                 child: LoneSpeech(
                   SpeechTextCallBack: (result) {
-                    SearchBarController.text = result;
+                    VoiceController.text = result;
+                    setState(() {});
                   },
                 ),
               ),
               Visibility(
                 visible: !calendarVisibility,
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 15),
+                  padding: EdgeInsets.symmetric(horizontal: 30),
                   margin: EdgeInsets.symmetric(vertical: 20),
                   child: Row(
                     children: [
                       Container(
-                        height: 50,
-                        width: 50,
+                        height: phoneHeight / 15,
+                        width: phoneWidth / 9,
                         decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(width: 2, color: Colors.grey)),
@@ -181,13 +243,16 @@ class _MainPage2ndState extends State<MainPage2nd> {
                       Container(
                         margin: EdgeInsets.only(right: 10),
                         child: Text(
-                          'دوشنبه',
-                          style: TextStyle(fontSize: 25),
+                          WeekDay().weekDay(DateTime.now().weekday),
+                          style:
+                              TextStyle(fontSize: 20, color: Colors.grey[700]),
                         ),
                       ),
                       Spacer(),
                       IconButton(
+                          color: Colors.grey[500],
                           icon: Icon(Icons.edit),
+                          iconSize: 20,
                           onPressed: () {
                             calendarVisibility = true;
                             setState(() {});
@@ -202,7 +267,7 @@ class _MainPage2ndState extends State<MainPage2nd> {
                 child: Column(
                   children: [
                     Container(
-                      width: 300,
+                      width: phoneWidth,
                       height: 300,
                       child:
                           persianDatePicker, // just pass `persianDatePicker` variable as child with no ( )
@@ -210,7 +275,7 @@ class _MainPage2ndState extends State<MainPage2nd> {
                     Center(
                         child: GestureDetector(
                       onTap: () {
-                        controllerVisibility = false;
+                        calendarVisibility = false;
                         setState(() {});
                       },
                       child: Container(
@@ -229,32 +294,33 @@ class _MainPage2ndState extends State<MainPage2nd> {
                 ),
               ),
               Container(
-                margin: EdgeInsets.symmetric(horizontal: 15.0),
+                margin: EdgeInsets.symmetric(horizontal: 30.0),
                 child: Column(
                   children: [
                     Row(
                       children: [
                         Text(
                           'ساعت:',
-                          style: TextStyle(fontSize: 20),
+                          style:
+                              TextStyle(fontSize: 20, color: Colors.grey[600]),
                         ),
                         Container(
                           margin: EdgeInsets.all(10.0),
                           padding: EdgeInsets.all(2.5),
                           child: GestureDetector(
                             onTap: () async {
-                              widget.picker = await showTimePicker(
-                                initialEntryMode: TimePickerEntryMode.input,
-                                context: context,
-                                initialTime: TimeOfDay(hour: 00, minute: 00),
-                                builder: (BuildContext context, Widget child) {
-                                  return MediaQuery(
-                                    data: MediaQuery.of(context)
-                                        .copyWith(alwaysUse24HourFormat: true),
-                                    child: child,
-                                  );
-                                },
-                              );
+                              // widget.picker = await showTimePicker(
+                              //   initialEntryMode: TimePickerEntryMode.input,
+                              //   context: context,
+                              //   initialTime: TimeOfDay(hour: 12, minute: 00),
+                              //   builder: (BuildContext context, Widget child) {
+                              //     return MediaQuery(
+                              //       data: MediaQuery.of(context)
+                              //           .copyWith(alwaysUse24HourFormat: true),
+                              //       child: child,
+                              //     );
+                              //   },
+                              // );
                               setState(() {});
                             },
                             child: widget.picker == null
@@ -278,19 +344,26 @@ class _MainPage2ndState extends State<MainPage2nd> {
                           ),
                         ),
                         Spacer(),
-                        IconButton(icon: Icon(Icons.edit), onPressed: null),
+                        IconButton(
+                            icon: Icon(Icons.edit),
+                            color: Colors.grey[500],
+                            iconSize: 20,
+                            onPressed: () {
+                              DatePicker.showTime12hPicker(context,
+                                  locale: LocaleType.fa);
+                            }),
                       ],
                     ),
                     Divider(
                       thickness: 2,
                       height: 1,
-                      color: Colors.grey,
+                      color: Colors.grey[300],
                     ),
                   ],
                 ),
               ),
               Container(
-                margin: EdgeInsets.symmetric(horizontal: 15.0),
+                margin: EdgeInsets.symmetric(horizontal: 30.0),
                 child: Column(
                   children: [
                     Visibility(
@@ -299,7 +372,8 @@ class _MainPage2ndState extends State<MainPage2nd> {
                         children: [
                           Text(
                             'کنترلر:',
-                            style: TextStyle(fontSize: 20),
+                            style: TextStyle(
+                                fontSize: 20, color: Colors.grey[600]),
                           ),
                           Container(
                             margin: EdgeInsets.all(10.0),
@@ -307,13 +381,15 @@ class _MainPage2ndState extends State<MainPage2nd> {
                             child: GestureDetector(
                               child: Container(
                                 padding: EdgeInsets.all(10.0),
-                                child: Text("اتوماتیک"),
+                                child: Text(selectedController ?? "اتوماتیک"),
                               ),
                             ),
                           ),
                           Spacer(),
                           IconButton(
                               icon: Icon(Icons.edit),
+                              iconSize: 20,
+                              color: Colors.grey[500],
                               onPressed: () {
                                 controllerVisibility = true;
                                 setState(() {});
@@ -323,106 +399,109 @@ class _MainPage2ndState extends State<MainPage2nd> {
                     ),
                     Visibility(
                       visible: controllerVisibility,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            child: Text("کنترلر:"),
-                          ),
-                          Container(
-                            margin: EdgeInsets.only(right: 30),
-                            height: phoneHeight / 3,
-                            child: ListView.builder(
-                                itemCount: Controllers.length,
-                                itemBuilder: (BuildContext context, int index) {
-                                  return GestureDetector(
-                                    onTap: () {
-                                      selectedController
-                                              .contains(Controllers[index])
-                                          ? selectedController
-                                              .remove(Controllers[index])
-                                          : selectedController.clear();
-                                      selectedController
-                                          .add(Controllers[index]);
-                                      setState(() {
-
-                                      });
-                                    },
-                                    child: Row(
-                                      children: [
-                                        Padding(
-                                          padding: EdgeInsets.all(8.0),
-                                          child: Image.asset(
-                                            selectedController.contains(
-                                                    Controllers[index])
-                                                ? 'assets/images/check1.png'
-                                                : 'assets/images/check2.png',
-                                            width: 30,
-                                            height: 30,
+                      child: Container(
+                        margin: EdgeInsets.symmetric(vertical: 30),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              child: Text("کنترلر:"),
+                            ),
+                            Container(
+                              margin: EdgeInsets.only(right: 30),
+                              height: phoneHeight / 3,
+                              child: ListView.builder(
+                                  itemCount: Controllers.length,
+                                  itemBuilder:
+                                      (BuildContext context, int index) {
+                                    return GestureDetector(
+                                      onTap: () {
+                                        selectedController = Controllers[index];
+                                        setState(() {});
+                                      },
+                                      child: Row(
+                                        children: [
+                                          Padding(
+                                            padding: EdgeInsets.all(8.0),
+                                            child: Image.asset(
+                                              selectedController ==
+                                                      Controllers[index]
+                                                  ? 'assets/images/check1.png'
+                                                  : 'assets/images/check2.png',
+                                              width: 30,
+                                              height: 30,
+                                            ),
                                           ),
-                                        ),
-                                        Text(Controllers[index]),
-                                      ],
-                                    ),
-                                  );
-                                }),
-                          ),
-                          Center(
-                              child: GestureDetector(
-                            onTap: () {
-                              controllerVisibility = false;
-                              setState(() {});
-                            },
-                            child: Container(
-                                padding: EdgeInsets.symmetric(horizontal: 20),
-                                margin: EdgeInsets.only(bottom: 10),
-                                decoration: BoxDecoration(
-                                    border: Border(
-                                        bottom: BorderSide(
-                                            width: 2, color: Colors.red))),
-                                child: Text(
-                                  "تایید",
-                                  style: TextStyle(fontWeight: FontWeight.w600),
-                                )),
-                          )),
-                        ],
+                                          Text(Controllers[index]),
+                                        ],
+                                      ),
+                                    );
+                                  }),
+                            ),
+                            Center(
+                                child: GestureDetector(
+                              onTap: () {
+                                controllerVisibility = false;
+                                setState(() {});
+                              },
+                              child: Container(
+                                  padding: EdgeInsets.symmetric(horizontal: 20),
+                                  margin: EdgeInsets.only(bottom: 10),
+                                  decoration: BoxDecoration(
+                                      border: Border(
+                                          bottom: BorderSide(
+                                              width: 2, color: Colors.red))),
+                                  child: Text(
+                                    "تایید",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.w600),
+                                  )),
+                            )),
+                          ],
+                        ),
                       ),
                     ),
                     Divider(
                       thickness: 2,
                       height: 1,
-                      color: Colors.grey,
+                      color: Colors.grey[300],
                     ),
                   ],
                 ),
               ),
               Container(
-                margin: EdgeInsets.symmetric(horizontal: 15.0),
+                margin: EdgeInsets.symmetric(horizontal: 30.0),
                 child: Column(
                   children: [
                     Visibility(
                       visible: !projectVisibility,
-                      child: Row(
-                        children: [
-                          Text(
-                            'پروژه:',
-                            style: TextStyle(fontSize: 20),
-                          ),
-                          Container(
-                            margin: EdgeInsets.all(10.0),
-                            padding: EdgeInsets.all(2.5),
-                            child: Text(
-                              "اینستاگرام",
+                      child: Container(
+                        margin: EdgeInsets.symmetric(vertical: 10),
+                        child: Row(
+                          children: [
+                            Text(
+                              'پروژه:',
+                              style: TextStyle(
+                                  fontSize: 20, color: Colors.grey[600]),
                             ),
-                          ),
-                          Spacer(),
-                          IconButton(
-                              icon: Icon(Icons.edit),
-                              onPressed: () {
-                                projectVisibility = true;
-                                setState(() {});
-                              }),
-                        ],
+                            Container(
+                              margin: EdgeInsets.all(10.0),
+                              padding: EdgeInsets.all(2.5),
+                              child: Text(
+                                selectedprojects ?? "اینستاگرام",
+                              ),
+                            ),
+                            Spacer(),
+                            IconButton(
+                                icon: Icon(Icons.edit),
+                                iconSize: 20,
+                                color: Colors.grey[500],
+                                onPressed: () {
+                                  projectVisibility = true;
+                                  setState(() {});
+                                }),
+                          ],
+                        ),
                       ),
                     ),
                     Visibility(
@@ -467,8 +546,8 @@ class _MainPage2ndState extends State<MainPage2nd> {
                             ],
                           ),
                           Container(
-                            margin: EdgeInsets.only(right: 30),
-                            height: phoneHeight / 3,
+                            margin: EdgeInsets.only(right: phoneWidth / 12),
+                            height: phoneHeight / 4,
                             child: ListView.builder(
                                 itemCount: projects.length,
                                 itemBuilder: (BuildContext context, int index) {
@@ -476,10 +555,18 @@ class _MainPage2ndState extends State<MainPage2nd> {
                                     children: [
                                       Padding(
                                         padding: EdgeInsets.all(8.0),
-                                        child: Image.asset(
-                                          'assets/images/check2.png',
-                                          width: 30,
-                                          height: 30,
+                                        child: GestureDetector(
+                                          onTap: () {
+                                            selectedprojects = projects[index];
+                                            setState(() {});
+                                          },
+                                          child: Image.asset(
+                                            selectedprojects == projects[index]
+                                                ? 'assets/images/check1.png'
+                                                : 'assets/images/check2.png',
+                                            width: 25,
+                                            height: 25,
+                                          ),
                                         ),
                                       ),
                                       Text(projects[index]),
@@ -511,7 +598,7 @@ class _MainPage2ndState extends State<MainPage2nd> {
                     Divider(
                       thickness: 2,
                       height: 1,
-                      color: Colors.grey,
+                      color: Colors.grey[300],
                     ),
                   ],
                 ),

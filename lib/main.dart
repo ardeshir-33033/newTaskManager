@@ -1,11 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:provider/provider.dart';
 import 'package:task_manager_new/Screens/VoiceStartPage.dart';
+import 'package:task_manager_new/provider/StateProvider.dart';
 import 'Screens/2ndPage.dart';
 import 'Screens/LoginPage.dart';
+import 'Screens/VoiceStartPage.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(MultiProvider(
+      providers: [
+        ChangeNotifierProvider<UserCheckBox>(
+            create: (context) => UserCheckBox()),
+      ],
+      child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -22,7 +30,7 @@ class MyApp extends StatelessWidget {
         Locale("fa", "IR"), // OR Locale('ar', 'AE') OR Other RTL locales
       ],
       locale: Locale("fa", "IR"),
-      home: MainPage2nd(),
+      home: VoiceStartPage(),
     );
   }
 }

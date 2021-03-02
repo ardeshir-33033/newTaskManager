@@ -167,7 +167,7 @@ class _LoneSpeechState extends State<LoneSpeech> {
                       Icons.mic_none_outlined,
                       size: 40,
                       color:
-                          speech.isListening ? Colors.red : Colors.orangeAccent,
+                          speech.isListening ? Colors.orangeAccent : Colors.red,
                     ),
                     Text(
                       'Voice',
