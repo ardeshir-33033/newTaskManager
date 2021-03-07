@@ -23,6 +23,9 @@ import 'package:task_manager_new/provider/SelectedUserProvider.dart';
 import 'package:task_manager_new/provider/StateProvider.dart';
 
 import '../provider/SelectedUserProvider.dart';
+import '../provider/SelectedUserProvider.dart';
+import '../provider/SelectedUserProvider.dart';
+import '../provider/SelectedUserProvider.dart';
 
 class MainPage2nd extends StatefulWidget {
   MainPage2nd({this.taskText});
@@ -914,6 +917,12 @@ class _MainPage2ndState extends State<MainPage2nd> {
     selectedDayName = WeekDay().weekDay(DateTime.now().weekday);
     timeDiffer = todayProvider().getDay();
     changeUserVisibility = false;
+    VoiceController.clear();
+    VoiceController.text = "";
+    SelectUser().setSelectedUser("");
+    SelectController().setController("");
+    SelectProject().setSelectedProject("");
+    todayProvider().setDay(null);
   }
 
   Timer _timer;
