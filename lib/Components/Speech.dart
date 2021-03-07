@@ -266,7 +266,7 @@ class _SpeechState extends State<Speech> {
       final min = match.group(2);
       DateTime res;
       // res =DateTime( , )
-      // SelectTime().setDateTime(res)
+      SelectTime().setDateTime(int.parse(hour), int.parse(min));
     }
     
     if (result.recognizedWords.contains("پس فردا")) {

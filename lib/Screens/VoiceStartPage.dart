@@ -7,6 +7,9 @@ import 'package:task_manager_new/Buisness/ApiBuisness.dart';
 import 'package:task_manager_new/Components/Speech.dart';
 import 'package:task_manager_new/provider/SelectedUserProvider.dart';
 
+import '../ApiModels/Controller.dart';
+import '../ApiModels/ProjectsModel.dart';
+import '../ApiModels/UserData.dart';
 import '../Services/EndPointService.dart';
 import '2ndPage.dart';
 
@@ -43,7 +46,9 @@ class _VoiceStartPageState extends State<VoiceStartPage> {
     );
   }
   TextEditingController speechController = TextEditingController();
-
+  List<UserData> allUsers = List<UserData>();
+  List<Project> projects = List<Project>();
+  List<Controller> controllers = List<Controller>();
   @override
   void initState() {
     // var hek = DateFormat('HH:mm:ss')
@@ -56,6 +61,9 @@ class _VoiceStartPageState extends State<VoiceStartPage> {
     ApiServices().fetchProjects();
     ApiServices().fetchController();
     ApiServices().fetchAllUser();
+    allUsers = ApiServices().getUsersList();
+    projects = ApiServices().getProjects();
+    controllers = ApiServices().getControllersList();
     // TODO: implement initState
     super.initState();
   }
@@ -97,6 +105,65 @@ class _VoiceStartPageState extends State<VoiceStartPage> {
                           keyboardType: TextInputType.multiline,
                           onChanged: (result) {
                             SpeechText = result;
+                            if (allUsers.any((element) {
+                              if (result.contains("توسط ${element.fullname}")) {
+                                SelectUser().setSelectedUser(element.fullname);
+                                setState(() {
+                                  // speechController.text += "${result.recognizedWords} ";
+                                });
+                                return true;
+                              } else {
+                                return false;
+                              }
+                            })) {}
+                            if (projects.any((element) {
+                              if (result.contains(element.name)) {
+                                SelectProject().setSelectedProject(element.name);
+                                setState(() {
+                                  // speechController.text += "${result.recognizedWords} ";
+                                });
+                                return true;
+                              } else {
+                                return false;
+                              }
+                            })) {}
+                            if(controllers.any((element) {
+                              if(result.contains("کنترل کننده ${element.fullname}")){
+                                SelectController().setController(element.fullname);
+                                return true;
+                              }else{
+                                return false;
+                              }
+
+                            }))
+                              if (result.contains("فردا")) {
+                                SelectDate().setSelectedProject(DateFormat("yyyy-MM-dd")
+                                    .format(DateTime.now().add(Duration(days: 1))));
+                                todayProvider().setDay(1);
+                                // speechController.text += "${result.recognizedWords} ";
+                              }
+
+                            final regex = RegExp('([0-9]+):([0-9]+)');
+                            final match = regex.firstMatch(result);
+
+                            if(match != null){
+                              final hour = match.group(1);
+                              final min = match.group(2);
+                              DateTime res;
+                              // res =DateTime( , )
+                              SelectTime().setDateTime(int.parse(hour), int.parse(min));
+                            }
+
+                            if (result.contains("پس فردا")) {
+                              SelectDate().setSelectedProject(DateFormat("yyyy-MM-dd")
+                                  .format(DateTime.now().add(Duration(days: 2))));
+                              todayProvider().setDay(2);
+                              // speechController.text += "${result.recognizedWords} ";
+                            } else {
+                              setState(() {
+                                // speechController.text += "${result.recognizedWords} ";
+                              });
+                            }
                             // widget.SpeechTextCallBack(speechController.text);
                           },
                           style: TextStyle(

@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class SelectUser {
   static String selectedUser;
 
@@ -58,14 +60,16 @@ class SelectController {
   }
 }
 
-class SelectTime{
-  static DateTime hour;
+class SelectTime {
+  static DateTime time;
 
   DateTime getDateTime() {
-    return hour;
+    return time;
   }
-  void setDateTime(int hour , int min){
-    hour.
-    hour = res;
+
+  void setDateTime(int hour, int min) {
+    time = DateTime.now();
+    time = DateTime(time.year, time.month, time.day, hour, min, time.second,
+        time.millisecond, time.microsecond);
   }
 }

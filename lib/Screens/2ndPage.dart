@@ -22,6 +22,8 @@ import 'package:task_manager_new/Components/SpeechAlone.dart';
 import 'package:task_manager_new/provider/SelectedUserProvider.dart';
 import 'package:task_manager_new/provider/StateProvider.dart';
 
+import '../provider/SelectedUserProvider.dart';
+
 class MainPage2nd extends StatefulWidget {
   MainPage2nd({this.taskText});
 
@@ -112,6 +114,7 @@ class _MainPage2ndState extends State<MainPage2nd> {
     selectedUser = SelectUser().getSelectedUser() ?? "";
     selectedController = SelectController().getController() ?? "";
 
+    choosenTime = SelectTime().getDateTime();
 
     // DateTime now = DateTime.now().subtract(duration);
 
