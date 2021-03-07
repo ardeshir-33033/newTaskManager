@@ -1,17 +1,28 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:math';
 import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
+import 'package:task_manager_new/ApiModels/Controller.dart';
+import 'package:task_manager_new/ApiModels/Controller.dart';
+import 'package:task_manager_new/ApiModels/Controller.dart';
+import 'package:task_manager_new/ApiModels/ProjectsModel.dart';
+import 'package:task_manager_new/ApiModels/TaskModel2.dart';
+import 'package:task_manager_new/ApiModels/UserData.dart';
+import 'package:task_manager_new/Buisness/ApiBuisness.dart';
+import 'package:task_manager_new/provider/SelectedUserProvider.dart';
 
 import '../Screens/2ndPage.dart';
 
 class Speech extends StatefulWidget {
-  Speech({this.SpeechTextCallBack, this.SpeechButtonCallBack});
+  Speech(
+      {this.SpeechTextCallBack, this.SpeechButtonCallBack, this.clearSpeech});
 
   Function(String SpeechText) SpeechTextCallBack;
   Function() SpeechButtonCallBack;
+  bool clearSpeech;
 
   @override
   _SpeechState createState() => _SpeechState();
@@ -72,12 +83,13 @@ class _SpeechState extends State<Speech> {
 
   //////starts listening when button pressed and the time for it depends on taping or long pressing the button
   void startListeningTap(int time) {
-    lastWords = "";
+    lastWords = speechController.text;
     lastError = "";
     speech.listen(
         onResult: resultListener,
         listenFor: Duration(seconds: time),
         localeId: _currentLocaleId,
+        partialResults: false,
         onSoundLevelChange: soundLevelListener,
         cancelOnError: true,
         listenMode: ListenMode.confirmation);
@@ -104,12 +116,181 @@ class _SpeechState extends State<Speech> {
     });
   }
 
+  List<UserData> allUsers = ApiServices().getUsersList();
+  List<Project> projects = ApiServices().getProjects();
+  List<Controller> controllers = ApiServices().getControllersList();
+
+  Timer _timer;
+  int _start = 2;
+
+  void startTimer() {
+    const oneSec = const Duration(seconds: 1);
+    _timer = new Timer.periodic(
+      oneSec,
+      (Timer timer) {
+        if (_start == 0) {
+          Navigator.pop(context);
+          // Navigator.pop(context);
+          setState(() {
+            timer.cancel();
+          });
+        } else {
+          setState(() {
+            _start--;
+          });
+        }
+      },
+    );
+  }
+
+  Future<Function> endHandler() async {
+    widget.SpeechTextCallBack(speechController.text);
+    speechController.clear();
+    // Navigator.push(context, MaterialPageRoute(builder: (BuildContext context) {
+    //   return MainPage2nd(
+    //     taskText: speechController.text,
+    //   );
+    // }));
+    bool result = await ApiServices().createTask(
+      TaskModel(
+        projects: SelectProject().getSelectedProject() ?? "",
+        creatorUserId: "e361abd4-a02c-4adc-bb5b-c74782da0a1f",
+        description: speechController.text,
+        linkedContactId: SelectUser().getSelectedUser() ?? "",
+        startDate: DateFormat("yyyy-MM-dd").format(DateTime.now()),
+      ),
+    );
+    if (result == true) {
+      speechController.clear();
+      setState(() {});
+      return showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              backgroundColor: Colors.grey[800],
+              content: new SingleChildScrollView(
+                padding: const EdgeInsets.only(right: 0),
+                child: Center(
+                  child: Text(
+                    'اطلاعات شما با موفقیت ثبت شد',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
+            );
+          });
+    } else if (result == false) {
+      setState(() {});
+      startTimer();
+      return showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              backgroundColor: Colors.grey[800],
+              content: new SingleChildScrollView(
+                padding: const EdgeInsets.only(right: 0),
+                child: Center(
+                  child: Text(
+                    'ارسال با مشکل مواجه شد',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ),
+            );
+          });
+    }
+  }
+
+  // List<String> Users = ["سیف الهی", "اونق", "روحی", "اوژن", "اردشیر"];
+
   ////would take words from api and put it on a string and will save status for showing changes in button
   void resultListener(SpeechRecognitionResult result) {
-    setState(() {
-      speechController.text = "${result.recognizedWords} ";
-    });
-    widget.SpeechTextCallBack(speechController.text);
+    if (widget.clearSpeech == true) {
+      speechController.clear();
+    }
+    speechController.text += "${result.recognizedWords} ";
+
+    if (result.recognizedWords.contains("تمام")) {
+      // setState(() {
+      //   // speechController.text = "${result.recognizedWords} ";
+      // });
+      endHandler();
+    }
+    if (allUsers.any((element) {
+      if (result.recognizedWords.contains("توسط ${element.fullname}")) {
+        SelectUser().setSelectedUser(element.fullname);
+        setState(() {
+          // speechController.text += "${result.recognizedWords} ";
+        });
+        widget.SpeechTextCallBack(speechController.text);
+        return true;
+      } else {
+        return false;
+      }
+    })) {}
+    if (projects.any((element) {
+      if (result.recognizedWords.contains(element.name)) {
+        SelectProject().setSelectedProject(element.name);
+        setState(() {
+          // speechController.text += "${result.recognizedWords} ";
+        });
+        widget.SpeechTextCallBack(speechController.text);
+        return true;
+      } else {
+        return false;
+      }
+    })) {}
+    if(controllers.any((element) {
+      if(result.recognizedWords.contains("کنترل کننده ${element.fullname}")){
+        SelectController().setController(element.fullname);
+        widget.SpeechTextCallBack(speechController.text);
+        return true;
+      }else{
+        return false;
+      }
+
+    }))
+    if (result.recognizedWords.contains("فردا")) {
+      SelectDate().setSelectedProject(DateFormat("yyyy-MM-dd")
+          .format(DateTime.now().add(Duration(days: 1))));
+      todayProvider().setDay(1);
+      // speechController.text += "${result.recognizedWords} ";
+      widget.SpeechTextCallBack(speechController.text);
+    }
+
+    final regex = RegExp('([0-9]+):([0-9]+)');
+    final match = regex.firstMatch(result.recognizedWords);
+    
+    if(match != null){
+      final hour = match.group(1);
+      final min = match.group(2);
+      DateTime res;
+      // res =DateTime( , )
+      // SelectTime().setDateTime(res)
+    }
+    
+    if (result.recognizedWords.contains("پس فردا")) {
+      SelectDate().setSelectedProject(DateFormat("yyyy-MM-dd")
+          .format(DateTime.now().add(Duration(days: 2))));
+      todayProvider().setDay(2);
+      // speechController.text += "${result.recognizedWords} ";
+      widget.SpeechTextCallBack(speechController.text);
+    } else {
+      setState(() {
+        // speechController.text += "${result.recognizedWords} ";
+      });
+      widget.SpeechTextCallBack(speechController.text);
+    }
+    // else if (ApiServices().getUsersList().where(
+    //         (element) => result.recognizedWords.contains(element.userName)) !=
+    //     null) {
+    //   bool dd = ApiServices().getUsersList().has
+    // }
+
+    // else if(result.recognizedWords.contains(ApiServices().getUsersList().)){
+    //   print("use");
+    //  // SelectUser().setSelectedUser(user)
+    // }
   }
 
   void statusListener(String status) {
@@ -140,84 +321,58 @@ class _SpeechState extends State<Speech> {
 
   @override
   Widget build(BuildContext context) {
+    double phoneWidth = MediaQuery.of(context).size.width;
+    double phoneHeight = MediaQuery.of(context).size.height;
     return Scaffold(
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Column(
           children: [
-            SizedBox(
-              width: 10.0,
-            ),
-            Card(
-              margin: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(
-                  Radius.circular(15.0),
-                ),
-                side: BorderSide(width: 1, color: Colors.grey),
-              ),
-              // height: 50,
-              // width: MediaQuery.of(context).size.width / 1.3,
-              // decoration: BoxDecoration(
-              //   borderRadius: BorderRadius.circular(5.0),
-              //   color: Colors.white,
-              // ),
-              color: Colors.white,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Padding(
-                      padding: EdgeInsets.all(4.0),
-                      child: TextField(
-                        controller: speechController,
-                        decoration: InputDecoration(
-                          border: InputBorder.none,
-                          hintText: "متن...",
-                        ),
-                        minLines: 4,
-                        maxLines: null,
-                        keyboardType: TextInputType.multiline,
-                        onChanged: (result) {
-                          widget.SpeechTextCallBack(speechController.text);
-                        },
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 14.0,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        textAlign: TextAlign.start,
-                      )),
-                  FlatButton(onPressed: () {}, child: Text('تمام'))
-                ],
-              ),
-            ),
-            SizedBox(
-              width: 5.0,
-            ),
-            /////button for listening it would be changes by listening or not
-            // speech.isListening
-            //     ////stop button
-            //     ? GestureDetector(
-            //         onTap: () {
-            //           speech.isListening ? stopListening : null;
-            //         },
-            //         child: Container(
-            //           height: 55,
-            //           width: 55,
-            //           decoration: BoxDecoration(
-            //             shape: BoxShape.circle,
-            //             color: Colors.lightBlue,
-            //           ),
-            //           child: Icon(
-            //             Icons.stop,
-            //             size: 25,
-            //             color: Colors.white,
-            //           ),
-            //         ),
-            //       )
-            //     ////
+            // SizedBox(
+            //   width: 10.0,
+            // ),
+            // Card(
+            //   margin: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
+            //   shape: RoundedRectangleBorder(
+            //     borderRadius: BorderRadius.all(
+            //       Radius.circular(15.0),
+            //     ),
+            //     side: BorderSide(width: 1, color: Colors.grey[400]),
+            //   ),
+            //   color: Colors.white,
+            //   child: Column(
+            //     crossAxisAlignment: CrossAxisAlignment.end,
+            //     children: [
+            //       Padding(
+            //           padding: EdgeInsets.symmetric(vertical: 10.0 , horizontal: 20),
+            //           child: TextField(
             //
-            //     ////start button
-            //     :
+            //             controller: speechController,
+            //             decoration: InputDecoration(
+            //               border: InputBorder.none,
+            //               hintText: "متن...",
+            //             ),
+            //             minLines: 5,
+            //             maxLines: null,
+            //             keyboardType: TextInputType.multiline,
+            //             onChanged: (result) {
+            //               widget.SpeechTextCallBack(speechController.text);
+            //             },
+            //             style: TextStyle(
+            //               color: Colors.black,
+            //               fontSize: 14.0,
+            //               fontWeight: FontWeight.w600,
+            //             ),
+            //             textAlign: TextAlign.start,
+            //           )),
+            //     ],
+            //   ),
+            // ),
+            // SizedBox(
+            //   width: 5.0,
+            //   height: 30,
+            // ),
+            /////button for listening it would be changes by listening or not
             GestureDetector(
               onTap: () {
                 widget.SpeechButtonCallBack();
@@ -227,42 +382,39 @@ class _SpeechState extends State<Speech> {
                     ? null
                     : startListeningTap(10);
               },
-              onLongPress: () {
-                print('long');
-                !_hasSpeech || speech.isListening
-                    ? null
-                    : startListeningTap(30);
-              },
+              // onLongPress: () {
+              //   print('long');
+              //   !_hasSpeech || speech.isListening
+              //       ? null
+              //       : startListeningTap(30);
+              // },
               child: Container(
-                height: 70,
-                width: 70,
+                height: 80,
+                width: 90,
+                // padding: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
                 decoration: BoxDecoration(
                   shape: BoxShape.rectangle,
-                  borderRadius: BorderRadius.circular(15.0),
+                  borderRadius: BorderRadius.circular(7.0),
                   border: Border.all(color: Colors.orangeAccent, width: 3),
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Icon(
-                      Icons.mic_none_outlined,
+                      Icons.mic_none,
                       size: 40,
                       color:
-                          speech.isListening ? Colors.orangeAccent : Colors.red,
+                          speech.isListening ? Colors.red : Colors.orangeAccent,
                     ),
                     Text(
-                      'Voice',
+                      'Continue',
                       style: TextStyle(fontSize: 10),
                     ),
                   ],
                 ),
               ),
             ),
-            //////
 
-            SizedBox(
-              width: 5.0,
-            ),
             ////container which listened words would be written in
 
             /////

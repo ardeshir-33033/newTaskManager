@@ -5,18 +5,17 @@ import 'package:speech_to_text/speech_recognition_error.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
 
-class LoneSpeech extends StatefulWidget {
-  LoneSpeech({this.SpeechTextCallBack, this.SpeechButtonCallBack , this.speechText});
+class SearchSpeech extends StatefulWidget {
+  SearchSpeech({this.SpeechTextCallBack, this.SpeechButtonCallBack});
 
   Function(String SpeechText) SpeechTextCallBack;
   Function() SpeechButtonCallBack;
-  String speechText = "";
 
   @override
-  _LoneSpeechState createState() => _LoneSpeechState();
+  _SearchSpeechState createState() => _SearchSpeechState();
 }
 
-class _LoneSpeechState extends State<LoneSpeech> {
+class _SearchSpeechState extends State<SearchSpeech> {
   bool _hasSpeech = false;
   double level = 0.0;
   double minSoundLevel = 50000;
@@ -64,14 +63,10 @@ class _LoneSpeechState extends State<LoneSpeech> {
 
   //////starts listening when button pressed and the time for it depends on taping or long pressing the button
   void startListeningTap(int time) {
-    speechController.text = widget.speechText;
-
-        lastWords = speechController.text;
+    lastWords = "";
     lastError = "";
     speech.listen(
-
         onResult: resultListener,
-        partialResults: false,
         listenFor: Duration(seconds: time),
         localeId: _currentLocaleId,
         onSoundLevelChange: soundLevelListener,
@@ -102,10 +97,8 @@ class _LoneSpeechState extends State<LoneSpeech> {
 
   ////would take words from api and put it on a string and will save status for showing changes in button
   void resultListener(SpeechRecognitionResult result) {
-    speechController.text += "${result.recognizedWords} ";
-
     setState(() {
-      // speechController.text = "${result.recognizedWords} ";
+      speechController.text = "${result.recognizedWords}";
     });
     widget.SpeechTextCallBack(speechController.text);
   }
@@ -138,60 +131,45 @@ class _LoneSpeechState extends State<LoneSpeech> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: Container(
-        width: MediaQuery.of(context).size.width,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            GestureDetector(
-              onTap: () {
-                // widget.SpeechButtonCallBack();
-
-                print('tap');
-                !_hasSpeech || speech.isListening
-                    ? null
-                    : startListeningTap(10);
-              },
-              onLongPress: () {
-                print('long');
-                !_hasSpeech || speech.isListening
-                    ? null
-                    : startListeningTap(30);
-              },
-              child: Container(
-                height: 80,
-                width: 90,
-                decoration: BoxDecoration(
-                  shape: BoxShape.rectangle,
-                  borderRadius: BorderRadius.circular(15.0),
-                  border: Border.all(color: Colors.orangeAccent, width: 3),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.mic_none_outlined,
-                      size: 40,
-                      color:
-                          speech.isListening ? Colors.red : Colors.orangeAccent,
-                    ),
-                    Text(
-                      'Voice',
-                      style: TextStyle(fontSize: 10),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            //////
-
-            ////container which listened words would be written in
-
-            /////
-          ],
+    return GestureDetector(
+      onTap: () {
+        !_hasSpeech || speech.isListening ? null : startListeningTap(10);
+      },
+      child: Container(
+        width: MediaQuery.of(context).size.width / 16,
+        height: 30,
+        // margin: EdgeInsets.only(left: 10 , bottom: 10),
+        child: Icon(
+          Icons.mic_none,
+          color: speech.isListening ? Colors.orangeAccent : Colors.black45,
+          size: 28,
         ),
       ),
     );
+    // Container(
+    // padding: EdgeInsets.only(left: 20 , bottom: 20),
+    //
+    // // margin: EdgeInsets.only(bottom: 17),
+    // height: 30,
+    // width: 30,
+    // color: Colors.red,
+    // child: IconButton(
+    //   icon: Icon(Icons.mic_none),
+    //   color: Colors.grey[600],
+    //   iconSize: MediaQuery.of(context).size.width / 14,
+    //   onPressed: () {
+    //     !_hasSpeech || speech.isListening ? null : startListeningTap(10);
+    //   },
+    // ),
+    // child: IconButton(
+    //
+    //   Icons.mic_none,
+    //   size: 30,
+    //   color:
+    //   speech.isListening ? Colors.orangeAccent : Colors.grey, icon: null, onPressed: () {  !_hasSpeech || speech.isListening
+    //     ? null
+    //     : startListeningTap(10); },
+    // ),
+    // );
   }
 }

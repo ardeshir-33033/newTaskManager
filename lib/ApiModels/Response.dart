@@ -1,7 +1,7 @@
 class ResponseModel {
   dynamic data;
   bool isSuccess;
-  String statusCode;
+  int statusCode;
   String message;
 
   ResponseModel({
@@ -12,7 +12,7 @@ class ResponseModel {
   });
 
   ResponseModel fromJson(dynamic jsn) {
-    this.statusCode = jsn["statusCode"].toString();
+    this.statusCode = jsn["statusCode"];
     this.data = jsn["data"];
     this.isSuccess = jsn["isSuccess"];
     this.message = jsn["message"].toString();

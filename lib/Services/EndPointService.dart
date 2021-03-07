@@ -6,11 +6,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
 import 'package:task_manager_new/ApiModels/QueryModel.dart';
 
+import '../ApiModels/Response.dart';
+
 class EndPointService extends ApiService {
   @override
-  String baseName = 'Users';
+  String baseName = 'appuser';
   @override
-  String baseUrl = 'https://signal.dinavision.org/api';
+  String baseUrl = 'https://dinavision.org/api/v1';
 
   @override
   String SecUrl = 'https://dinavision.org/userinfo';
@@ -87,7 +89,7 @@ abstract class ApiService {
         if (data == null || data.isEmpty)
           return null;
 
-        return json.decode(data);
+        return ResponseModel().fromJson(json.decode(data));
         break;
       case ResponseEnum.Unit8ListEnum:
         return response.bodyBytes;
@@ -108,7 +110,7 @@ abstract class ApiService {
 
   SetupApi(String baseName, String parameter, List<QueryModel> queries) {
     this.baseName =
-    baseName != null && baseName.isNotEmpty ? "/$baseName" : "/Users";
+    baseName != null && baseName.isNotEmpty ? "/$baseName" : "/appuser";
     this.parameter =
     parameter != null && parameter.isNotEmpty ? "/$parameter" : "";
     if (queries != null && queries.length > 0) {

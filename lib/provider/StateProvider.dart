@@ -6,10 +6,28 @@ class UserCheckBox with ChangeNotifier {
   }
 }
 
+class ControllerCheckBox with ChangeNotifier {
+  void ChangeIcon() {
+    notifyListeners();
+  }
+}
+
+class ProjectCheckBox with ChangeNotifier {
+  void ChangeIcon() {
+    notifyListeners();
+  }
+
+  // void ChangeHour(){
+  //   notifyListeners();
+  // }
+}
+
 class WeekDay {
   String dayName;
 
   String weekDay(int day) {
+    day = day % 7;
+    print(day);
     switch (day) {
       case 1:
         dayName = 'دوشنبه';
@@ -29,9 +47,11 @@ class WeekDay {
       case 6:
         dayName = "شنبه";
         break;
-      case 7:
+      case 7 :
         dayName = "یک شنبه";
         break;
+      case 0:
+        dayName = "یک شنبه";
     }
     return dayName;
   }

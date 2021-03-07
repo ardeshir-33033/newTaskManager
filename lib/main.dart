@@ -8,12 +8,13 @@ import 'Screens/LoginPage.dart';
 import 'Screens/VoiceStartPage.dart';
 
 void main() {
-  runApp(MultiProvider(
-      providers: [
-        ChangeNotifierProvider<UserCheckBox>(
-            create: (context) => UserCheckBox()),
-      ],
-      child: MyApp()));
+  runApp(MultiProvider(providers: [
+    ChangeNotifierProvider<UserCheckBox>(create: (context) => UserCheckBox()),
+    ChangeNotifierProvider<ControllerCheckBox>(
+        create: (context) => ControllerCheckBox()),
+    ChangeNotifierProvider<ProjectCheckBox>(
+        create: (context) => ProjectCheckBox()),
+  ], child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
@@ -34,4 +35,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
