@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
+import 'package:persian_number_utility/persian_number_utility.dart';
 import 'dart:async';
 import 'dart:math';
 import 'package:speech_to_text/speech_recognition_error.dart';
@@ -13,16 +14,21 @@ import 'package:task_manager_new/ApiModels/TaskModel2.dart';
 import 'package:task_manager_new/ApiModels/UserData.dart';
 import 'package:task_manager_new/Buisness/ApiBuisness.dart';
 import 'package:task_manager_new/provider/SelectedUserProvider.dart';
+import 'package:task_manager_new/provider/StateProvider.dart';
 
 import '../Screens/2ndPage.dart';
 
 class Speech extends StatefulWidget {
-  Speech(
-      {this.SpeechTextCallBack, this.SpeechButtonCallBack, this.clearSpeech});
+  Speech({
+    this.SpeechTextCallBack,
+    this.SpeechButtonCallBack,
+    // this.clearSpeech
+  });
 
   Function(String SpeechText) SpeechTextCallBack;
   Function() SpeechButtonCallBack;
-  bool clearSpeech;
+
+  // bool clearSpeech;
 
   @override
   _SpeechState createState() => _SpeechState();
@@ -205,10 +211,12 @@ class _SpeechState extends State<Speech> {
 
   ////would take words from api and put it on a string and will save status for showing changes in button
   void resultListener(SpeechRecognitionResult result) {
-    if (widget.clearSpeech == true) {
+    // if (widget.clearSpeech == true) {
+    if (ClearSpeech().getClearSpeech() == true) {
+      SpeechController.speechController.clear();
       speechController.clear();
     }
-    speechController.text += "${result.recognizedWords} ";
+    SpeechController.speechController.text += "${result.recognizedWords} ";
 
     if (result.recognizedWords.contains("تمام")) {
       // setState(() {
@@ -222,7 +230,7 @@ class _SpeechState extends State<Speech> {
         setState(() {
           // speechController.text += "${result.recognizedWords} ";
         });
-        widget.SpeechTextCallBack(speechController.text);
+        widget.SpeechTextCallBack(SpeechController.speechController.text);
         return true;
       } else {
         return false;
@@ -234,52 +242,53 @@ class _SpeechState extends State<Speech> {
         setState(() {
           // speechController.text += "${result.recognizedWords} ";
         });
-        widget.SpeechTextCallBack(speechController.text);
+        widget.SpeechTextCallBack(SpeechController.speechController.text);
         return true;
       } else {
         return false;
       }
     })) {}
-    if(controllers.any((element) {
-      if(result.recognizedWords.contains("کنترل کننده ${element.fullname}")){
+    if (controllers.any((element) {
+      if (result.recognizedWords.contains("کنترل کننده ${element.fullname}")) {
         SelectController().setController(element.fullname);
-        widget.SpeechTextCallBack(speechController.text);
+        widget.SpeechTextCallBack(SpeechController.speechController.text);
         return true;
-      }else{
+      } else {
         return false;
       }
-
-    }))
-    if (result.recognizedWords.contains("فردا")) {
+    })) if (result.recognizedWords.contains("فردا")) {
       SelectDate().setSelectedProject(DateFormat("yyyy-MM-dd")
           .format(DateTime.now().add(Duration(days: 1))));
       todayProvider().setDay(1);
       // speechController.text += "${result.recognizedWords} ";
-      widget.SpeechTextCallBack(speechController.text);
+      widget.SpeechTextCallBack(SpeechController.speechController.text);
     }
 
-    final regex = RegExp('([0-9]+):([0-9]+)');
+    final regex = RegExp('([۰-۹]+):([۰-۹]+)');
     final match = regex.firstMatch(result.recognizedWords);
-    
-    if(match != null){
-      final hour = match.group(1);
-      final min = match.group(2);
+    // ۱۲۳۴۵۶۷۸۹
+    if (match != null) {
+      String hour = match.group(1);
+      String min = match.group(2);
       DateTime res;
       // res =DateTime( , )
+      // Text("۱۲۳۴۵۶۷۸۹".toEnglishDigit());
+      hour = hour.toEnglishDigit();
+      min = min.toEnglishDigit();
       SelectTime().setDateTime(int.parse(hour), int.parse(min));
     }
-    
+
     if (result.recognizedWords.contains("پس فردا")) {
       SelectDate().setSelectedProject(DateFormat("yyyy-MM-dd")
           .format(DateTime.now().add(Duration(days: 2))));
       todayProvider().setDay(2);
       // speechController.text += "${result.recognizedWords} ";
-      widget.SpeechTextCallBack(speechController.text);
+      widget.SpeechTextCallBack(SpeechController.speechController.text);
     } else {
       setState(() {
         // speechController.text += "${result.recognizedWords} ";
       });
-      widget.SpeechTextCallBack(speechController.text);
+      widget.SpeechTextCallBack(SpeechController.speechController.text);
     }
     // else if (ApiServices().getUsersList().where(
     //         (element) => result.recognizedWords.contains(element.userName)) !=
@@ -328,50 +337,6 @@ class _SpeechState extends State<Speech> {
       body: SafeArea(
         child: Column(
           children: [
-            // SizedBox(
-            //   width: 10.0,
-            // ),
-            // Card(
-            //   margin: EdgeInsets.symmetric(vertical: 10, horizontal: 20),
-            //   shape: RoundedRectangleBorder(
-            //     borderRadius: BorderRadius.all(
-            //       Radius.circular(15.0),
-            //     ),
-            //     side: BorderSide(width: 1, color: Colors.grey[400]),
-            //   ),
-            //   color: Colors.white,
-            //   child: Column(
-            //     crossAxisAlignment: CrossAxisAlignment.end,
-            //     children: [
-            //       Padding(
-            //           padding: EdgeInsets.symmetric(vertical: 10.0 , horizontal: 20),
-            //           child: TextField(
-            //
-            //             controller: speechController,
-            //             decoration: InputDecoration(
-            //               border: InputBorder.none,
-            //               hintText: "متن...",
-            //             ),
-            //             minLines: 5,
-            //             maxLines: null,
-            //             keyboardType: TextInputType.multiline,
-            //             onChanged: (result) {
-            //               widget.SpeechTextCallBack(speechController.text);
-            //             },
-            //             style: TextStyle(
-            //               color: Colors.black,
-            //               fontSize: 14.0,
-            //               fontWeight: FontWeight.w600,
-            //             ),
-            //             textAlign: TextAlign.start,
-            //           )),
-            //     ],
-            //   ),
-            // ),
-            // SizedBox(
-            //   width: 5.0,
-            //   height: 30,
-            // ),
             /////button for listening it would be changes by listening or not
             GestureDetector(
               onTap: () {

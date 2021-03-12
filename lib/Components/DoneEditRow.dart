@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:task_manager_new/ApiModels/TaskModel2.dart';
 import 'package:task_manager_new/Buisness/ApiBuisness.dart';
 import 'package:task_manager_new/provider/SelectedUserProvider.dart';
+import 'package:task_manager_new/provider/StateProvider.dart';
 
 class SendRowButton extends StatefulWidget {
   SendRowButton(
@@ -50,6 +51,7 @@ class _SendRowButtonState extends State<SendRowButton> {
       children: [
         GestureDetector(
           onTap: () async {
+            ClearSpeech().setClearSpeech(false);
             BuildContext dialogContext;
             bool result = await ApiServices().createTask(
               TaskModel(

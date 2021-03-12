@@ -1,11 +1,15 @@
 import 'dart:async';
+import 'dart:io';
 
+import 'package:connectivity/connectivity.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:task_manager_new/ApiModels/TaskModel2.dart';
 import 'package:task_manager_new/Buisness/ApiBuisness.dart';
 import 'package:task_manager_new/Components/Speech.dart';
+import 'package:task_manager_new/Services/connectionCheck.dart';
 import 'package:task_manager_new/provider/SelectedUserProvider.dart';
+import 'package:task_manager_new/provider/StateProvider.dart';
 
 import '../ApiModels/Controller.dart';
 import '../ApiModels/ProjectsModel.dart';
@@ -20,52 +24,51 @@ class VoiceStartPage extends StatefulWidget {
 
 class _VoiceStartPageState extends State<VoiceStartPage> {
   String SpeechText;
+  var subscription;
   bool sendVisible = false;
-   bool clearSpeech = false;
+   // bool clearSpeech = false;
 
   Timer _timer;
   int _start = 2;
 
-  void startTimer() {
-    const oneSec = const Duration(seconds: 1);
-    _timer = new Timer.periodic(
-      oneSec,
-      (Timer timer) {
-        if (_start == 0) {
-          Navigator.pop(context);
-          // Navigator.pop(context);
-          setState(() {
-            timer.cancel();
-          });
-        } else {
-          setState(() {
-            _start--;
-          });
-        }
-      },
-    );
-  }
   TextEditingController speechController = TextEditingController();
   List<UserData> allUsers = List<UserData>();
   List<Project> projects = List<Project>();
   List<Controller> controllers = List<Controller>();
+  Future<void> connectionCheck() async {
+  }
+  //   try {
+  //     final result = await InternetAddress.lookup('google.com');
+  //     if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+  //       print('connected');
+  //     }
+  //   } on SocketException catch (_) {
+  //     print('not connected');
+  //   }
+  // }
   @override
   void initState() {
-    // var hek = DateFormat('HH:mm:ss')
-    //     .format(DateTime.now());
-    // var jjd = DateFormat("yyyy-MM-dd").format(DateTime.now());
-    // print(jjd);
-    // print(hek);
-    // DateTime hek = DateTime.now();
-    // ApiServices().setTask();
+    checkInternet().checkConnection(context);
+
+    connectionCheck();
+
     ApiServices().fetchProjects();
     ApiServices().fetchController();
     ApiServices().fetchAllUser();
     allUsers = ApiServices().getUsersList();
     projects = ApiServices().getProjects();
     controllers = ApiServices().getControllersList();
-    // TODO: implement initState
+
+      // TODO: implement initState
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+      checkInternet().listener.cancel();
+    // subscription.cancel();
   }
 
   @override
@@ -180,12 +183,12 @@ class _VoiceStartPageState extends State<VoiceStartPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
-                    height: phoneHeight / 10,
+                    height: phoneHeight / 7,
                     margin: EdgeInsets.only(top: phoneHeight / 20),
                     width: 100,
                     child: Center(
                       child: Speech(
-                        clearSpeech: clearSpeech,
+                        //clearSpeech: clearSpeech,
                         SpeechTextCallBack: (result) {
                           SpeechText = result;
                           speechController.text = result;
@@ -207,6 +210,7 @@ class _VoiceStartPageState extends State<VoiceStartPage> {
                 children: [
                   GestureDetector(
                     onTap: () async {
+                      SpeechController.speechController.clear();
                       bool result = await ApiServices().createTask(
                         TaskModel(
                           projects: SelectProject().getSelectedProject() ?? "",
@@ -219,7 +223,8 @@ class _VoiceStartPageState extends State<VoiceStartPage> {
                       );
 
                       if (result == true) {
-                        clearSpeech = true;
+                        ClearSpeech().setClearSpeech(true);
+                        // clearSpeech = true;
 
                         sendVisible = false;
                         speechController.clear();
@@ -251,7 +256,8 @@ class _VoiceStartPageState extends State<VoiceStartPage> {
                               );
                             });
                       } else if (result == false) {
-                        clearSpeech = true;
+                        ClearSpeech().setClearSpeech(true);
+                        // clearSpeech = true;
                         sendVisible = false;
                         setState(() {});
                         startTimer();
@@ -299,7 +305,8 @@ class _VoiceStartPageState extends State<VoiceStartPage> {
                   ),
                   GestureDetector(
                     onTap: () {
-                      clearSpeech = true;
+                      ClearSpeech().setClearSpeech(true);
+                      // clearSpeech = true;
                       speechController.clear();
                       setState(() {});
 
@@ -347,6 +354,25 @@ class _VoiceStartPageState extends State<VoiceStartPage> {
           ),
         ),
       ),
+    );
+  }
+  void startTimer() {
+    const oneSec = const Duration(seconds: 1);
+    _timer = new Timer.periodic(
+      oneSec,
+          (Timer timer) {
+        if (_start == 0) {
+          Navigator.pop(context);
+          // Navigator.pop(context);
+          setState(() {
+            timer.cancel();
+          });
+        } else {
+          setState(() {
+            _start--;
+          });
+        }
+      },
     );
   }
 }

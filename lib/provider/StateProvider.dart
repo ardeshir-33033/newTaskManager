@@ -21,6 +21,20 @@ class ProjectCheckBox with ChangeNotifier {
   //   notifyListeners();
   // }
 }
+class ClearSpeech{
+  static bool clearSpeech = false;
+
+  setClearSpeech(bool res){
+    clearSpeech = res;
+  }
+  bool getClearSpeech(){
+    return clearSpeech;
+  }
+}
+class SpeechController{
+  static TextEditingController speechController = TextEditingController();
+
+}
 
 class WeekDay {
   String dayName;

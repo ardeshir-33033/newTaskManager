@@ -6,8 +6,11 @@ import 'package:task_manager_new/provider/StateProvider.dart';
 import 'Screens/2ndPage.dart';
 import 'Screens/LoginPage.dart';
 import 'Screens/VoiceStartPage.dart';
+import 'Services/connectionCheck.dart';
 
 void main() {
+  // ConnectionStatusSingleton connectionStatus = ConnectionStatusSingleton.getInstance();
+  // connectionStatus.initialize();
   runApp(MultiProvider(providers: [
     ChangeNotifierProvider<UserCheckBox>(create: (context) => UserCheckBox()),
     ChangeNotifierProvider<ControllerCheckBox>(
